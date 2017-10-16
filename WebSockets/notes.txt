@@ -1,0 +1,94 @@
+https://community.ipswitch.com/s/article/ka036000000kPwMAAU/Avoiding-TCP-IP-Port-Exhaustion
+
+Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+
+
+
+https://github.com/dotnet/designs/issues/9
+
+
+
+
+Microsoft.AspNetCore.WebSockets.Server
+<PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
+
+<PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.0.0" />
+    
+    
+
+disable AI: https://github.com/aspnet/Home/issues/2051
+
+
+<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
+
+.UseApplicationInsights()
+
+
+---
+
+
+
+<TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+
+<PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+
+
+echo-v2: bench-wsload.exe 127.0.0.1 5000 100 100 4000 10 0
+several connection refused errors
+
+808833 bytes/s in 1.187ms and 960155 bytes
+2231685 bytes/s in 0.439ms and 980000 bytes
+2003276 bytes/s in 0.489ms and 980000 bytes
+1066100 bytes/s in 0.919ms and 980000 bytes
+1635855 bytes/s in 0.599ms and 980000 bytes
+1830325 bytes/s in 0.535ms and 980000 bytes
+1949418 bytes/s in 0.502ms and 980000 bytes
+2072906 bytes/s in 0.472ms and 980000 bytes
+1146162 bytes/s in 0.855ms and 980000 bytes
+1763570 bytes/s in 0.555ms and 980000 bytes
+
+
+
+
+beast:
+4071306 bytes/s in 0.24ms and 980000 bytes                  
+3703549 bytes/s in 0.264ms and 980000 bytes                 
+4236207 bytes/s in 0.231ms and 980000 bytes                 
+3625512 bytes/s in 0.27ms and 980000 bytes                  
+4012829 bytes/s in 0.244ms and 980000 bytes                 
+4101860 bytes/s in 0.238ms and 980000 bytes                 
+4325494 bytes/s in 0.226ms and 980000 bytes                 
+4515203 bytes/s in 0.217ms and 980000 bytes                 
+4506584 bytes/s in 0.217ms and 980000 bytes                 
+4304432 bytes/s in 0.227ms and 980000 bytes                 
+4321395 bytes/s in 0.226ms and 980000 bytes                 
+3969121 bytes/s in 0.246ms and 980000 bytes                 
+3942300 bytes/s in 0.248ms and 980000 bytes                 
+4242365 bytes/s in 0.231ms and 980000 bytes                 
+
+
+
+
+
+I've made a few mods to the EchoApp (eg: to dispose of websockets, track # of open connections, not use IISIntegration, etc), and then i tried to run ws_load from the beast project (https://github.com/boostorg/beast) with 2k concurrent connections, eg: 
+
+bench-wsload <address> <port> <trials> <messages> <workers> <threads> <compression:0|1>
+bench-wsload 127.0.0.1 5000 100 100 2000 10 0
+
+With these params I consistently get the following errors during the run:
+
+on_connect: No connection could be made because the target machine actively refused it
+
+I see no such problems when I run the test against the beast websocket server. I tried upgrading to asp.net core 2.0, and set the kestrel options like so to ensure max concurrent connections were unlimited, but it did not help:
+
+            var host = new WebHostBuilder()
+                .UseKestrel(opts =>
+                {
+                    opts.Limits.MaxConcurrentConnections = null;
+                    opts.Limits.MaxConcurrentUpgradedConnections = null;
+
+Any help is appreciated.
+
+
+
+auto connect_lamdba = [this, self] { self->do_connect(); }
